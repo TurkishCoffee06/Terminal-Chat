@@ -1,0 +1,9 @@
+!These are bitmasks so we can use these with logical operations: 
+---------------------------------------------------
+1) AI_PASSIVE : fill in IP auto 
+2) AI_NUMERICHOST : doesnt care the DNS and just gets numeric IP addr (X www.)
+3) AI_NUMERICSERV : doenst care the service type and gets the numeric value of port (X http.)
+4) AI_CANONNAME : uses canonical name instead of IP
+5) AI_V4MAPPED : turns IPv4 adress into a mapped IPv6  
+6) AI_ALL : (! used with ORed AI_V4MAPPED !) bunu çok hatırlamıyormuş 
+7) AI_ADDRCONFIG : V4 or V6 racism 
