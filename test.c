@@ -75,4 +75,7 @@ EXIT:
   close(client);
   return 0;
 
-};  
+}; 
+
+//me stupy
+//me bingy
