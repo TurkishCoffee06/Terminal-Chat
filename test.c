@@ -1,3 +1,4 @@
+#include <asm-generic/socket.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
@@ -13,7 +14,9 @@ int main(){
   int bned_tcps = 0;
   int lis = 0;
   int client = 0;
-  
+  int reuseaddr_opt = 1;
+
+
   struct addrinfo hints;
   struct addrinfo *res;
 
@@ -32,23 +35,26 @@ int main(){
   tcp_socket = socket(res->ai_family,res->ai_socktype,res->ai_protocol);
   if(tcp_socket < 0){
     perror("socket():");
-    return -1;
+    goto EXIT;
   }
   printf("Socket created sucsessfully...\n");
   
-  
+  if(setsockopt(tcp_socket, SOL_SOCKET , SO_REUSEADDR , &reuseaddr_opt , sizeof(reuseaddr_opt)) < 0){
+    perror("setsockopt()");
+    goto EXIT;
+  }
 
   bned_tcps = bind(tcp_socket, res->ai_addr , res->ai_addrlen );
   if(bned_tcps < 0){
     perror("bind():");
-    return -1;
+    goto EXIT;
   }
   printf("Binded successfully...\n");
 
   lis = listen( tcp_socket , 20 );
   if(lis < 0){
     perror("listen():");
-    return -1;
+    goto  EXIT;
   }
   printf("listening successfully...\n");
   
@@ -69,10 +75,12 @@ int main(){
     }
 
   }
-EXIT:
 
-  freeaddrinfo(res);
+EXIT:
   close(client);
+  close(tcp_socket);
+  freeaddrinfo(res);
+
   return 0;
 
 }; 
