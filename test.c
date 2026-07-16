@@ -1,4 +1,5 @@
 #include <asm-generic/socket.h>
+#include <stddef.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
@@ -15,7 +16,8 @@ int main(){
   int lis = 0;
   int client = 0;
   int reuseaddr_opt = 1;
-
+  size_t msg_len = 5;
+  char msg[]="hello";
 
   struct addrinfo hints;
   struct addrinfo *res;
@@ -67,13 +69,11 @@ int main(){
       continue;
     }
 
-
-
-    if(client > 0){
+    if(client >= 0){
       printf("connection successfull!\n");
-      goto EXIT;
+      send(client, msg , sizeof(msg_len)-1 , 0);
+      close(client);
     }
-
   }
 
 EXIT:
