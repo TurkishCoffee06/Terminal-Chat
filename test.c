@@ -108,7 +108,7 @@ void *client_side(void *arg){
 
   char msg[512];
   int  msg_len = 0;
-
+  char *newline ;
   while(1){
     
     int message_length = recv(clnt, msg + msg_len, sizeof(msg) -msg_len -1, 0);
@@ -119,7 +119,6 @@ void *client_side(void *arg){
     
     msg_len += message_length;
     msg[msg_len]= '\0';
-    char *newline = strchr(msg,'\n' );
     while((newline = strchr(msg, '\n')) != NULL){
       *newline = '\0';
       printf("complete message: %s\n",msg);
