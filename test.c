@@ -124,22 +124,24 @@ void *client_side(void *arg){
       *newline = '\0';
       printf("complete message: %s\n",msg);
       
-      int whole_message = (newline - msg) + 1;
-      int remaining = msg_len - whole_message;
-      
-      memmove(msg, newline + 1, remaining);
-      msg_len = remaining;
-
     }
 
 
     pthread_mutex_lock(&clientl_lock);
     for(int i = 0; i < client_count; i++){
       if (client_list[i]!=clnt){
-        send(client_list[i],msg,sizeof(message_length), 0);
+        send(client_list[i],msg,strlen(msg), 0);
       }
     }
     pthread_mutex_unlock(&clientl_lock);
+    
+    int whole_message = (newline - msg) + 1;
+    int remaining = msg_len - whole_message;
+      
+    memmove(msg, newline + 1, remaining);
+    msg_len = remaining;
+
+
   }
 
   printf("client disconnected\n");
