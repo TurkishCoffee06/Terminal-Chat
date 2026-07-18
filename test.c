@@ -123,23 +123,23 @@ void *client_side(void *arg){
     while((newline = strchr(msg, '\n')) != NULL){
       *newline = '\0';
       printf("complete message: %s\n",msg);
-      
-    }
-
-
-    pthread_mutex_lock(&clientl_lock);
-    for(int i = 0; i < client_count; i++){
-      if (client_list[i]!=clnt){
-        send(client_list[i],msg,strlen(msg), 0);
+      pthread_mutex_lock(&clientl_lock);
+      for(int i = 0; i < client_count; i++){
+        if (client_list[i]!=clnt){
+          send(client_list[i],msg,strlen(msg), 0);
+          send(client_list[i],"\n",1,0);
+        }
       }
-    }
-    pthread_mutex_unlock(&clientl_lock);
+      pthread_mutex_unlock(&clientl_lock);
     
-    int whole_message = (newline - msg) + 1;
-    int remaining = msg_len - whole_message;
+      int whole_message = (newline - msg) + 1;
+      int remaining = msg_len - whole_message;
       
-    memmove(msg, newline + 1, remaining);
-    msg_len = remaining;
+      memmove(msg, newline + 1, remaining);
+      msg_len = remaining;
+
+    }
+
 
 
   }
