@@ -13,6 +13,12 @@
 
 void *client_side(void *arg);
 
+#define MAX_CLIENT 10
+
+int client_list[MAX_CLIENT];
+int client_count = 0;
+pthread_mutex_t clientl_lock =  PTHREAD_MUTEX_INITIALIZER;
+
 int main(){
   int gai_status = 0;
   int tcp_socket = 0;
@@ -20,8 +26,6 @@ int main(){
   int lis = 0;
   int client = 0;
   int reuseaddr_opt = 1;
-  size_t msg_len = 5;
-  char msg[]="hello";
 
   struct addrinfo hints;
   struct addrinfo *res;
@@ -57,7 +61,7 @@ int main(){
   }
   printf("Binded successfully...\n");
 
-  lis = listen( tcp_socket , 20 );
+  lis = listen( tcp_socket , 10 );
   if(lis < 0){
     perror("listen():");
     goto  EXIT;
@@ -73,6 +77,11 @@ int main(){
       continue;
     }
     
+    pthread_mutex_lock(&clientl_lock);
+    client_list[client_count] = client;
+    client_count++;
+    pthread_mutex_unlock(&clientl_lock);
+
     int *client_copy = malloc(sizeof(int));
     *client_copy = client;
 
@@ -95,10 +104,50 @@ void *client_side(void *arg){
   int clnt = *(int *)arg;
   free(arg);
   
-  printf("connection successfull!\n");
-  send(clnt, "hello" , 5, 0);
-  close(clnt);
+  printf("Connection successfull!\n");
 
+  char msg[512];
+  int  msg_len = 0;
+
+  while(1){
+    
+    int message_length = recv(clnt, msg + msg_len, sizeof(msg) -msg_len -1, 0);
+
+    if (message_length <= 0){
+      break;
+    }
+    
+    msg_len += message_length;
+    msg[msg_len]= '\0';
+    char *newline = strchr(msg,'\n' );
+    if (newline != NULL){
+      *newline = '\0';
+      printf("complete message: %s\n",msg);
+    }
+
+
+    pthread_mutex_lock(&clientl_lock);
+    for(int i = 0; i < client_count; i++){
+      if (client_list[i]!=clnt){
+        send(client_list[i],msg,sizeof(message_length), 0);
+      }
+    }
+    pthread_mutex_unlock(&clientl_lock);
+  }
+
+  printf("client disconnected\n");
+
+  pthread_mutex_lock(&clientl_lock);
+  for(int i = 0; i < client_count; i++){
+    if (client_list[i]==clnt){
+      client_list[i] = client_list[client_count-1];
+      client_count--;
+      break;
+    }
+  }
+  pthread_mutex_unlock(&clientl_lock);
+
+  close(clnt);
   return NULL;
 
 }
