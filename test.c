@@ -8,6 +8,10 @@
 #include <netinet/tcp.h>
 #include <sys/types.h>
 #include <netdb.h>
+#include <pthread.h>
+#include <malloc.h>
+
+void *client_side(void *arg);
 
 int main(){
   int gai_status = 0;
@@ -68,12 +72,14 @@ int main(){
       perror("accept():");
       continue;
     }
+    
+    int *client_copy = malloc(sizeof(int));
+    *client_copy = client;
 
-    if(client >= 0){
-      printf("connection successfull!\n");
-      send(client, msg , sizeof(msg_len)-1 , 0);
-      close(client);
-    }
+    pthread_t tid;
+    pthread_create(&tid, NULL , client_side, client_copy );
+    pthread_detach(tid);
+
   }
 
 EXIT:
@@ -84,6 +90,18 @@ EXIT:
   return 0;
 
 }; 
+
+void *client_side(void *arg){
+  int clnt = *(int *)arg;
+  free(arg);
+  
+  printf("connection successfull!\n");
+  send(clnt, "hello" , 5, 0);
+  close(clnt);
+
+  return NULL;
+
+}
 
 //me stupy
 //me bingy
