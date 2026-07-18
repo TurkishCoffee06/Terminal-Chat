@@ -120,9 +120,16 @@ void *client_side(void *arg){
     msg_len += message_length;
     msg[msg_len]= '\0';
     char *newline = strchr(msg,'\n' );
-    if (newline != NULL){
+    while((newline = strchr(msg, '\n')) != NULL){
       *newline = '\0';
       printf("complete message: %s\n",msg);
+      
+      int whole_message = (newline - msg) + 1;
+      int remaining = msg_len - whole_message;
+      
+      memmove(msg, newline + 1, remaining);
+      msg_len = remaining;
+
     }
 
 
