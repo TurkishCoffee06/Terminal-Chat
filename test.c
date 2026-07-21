@@ -15,8 +15,17 @@ void *client_side(void *arg);
 
 #define MAX_CLIENT 10
 
-int client_list[MAX_CLIENT];
+//int client_list[MAX_CLIENT];
+
+
+struct USERS{
+  int client_id[MAX_CLIENT];
+  char client_name[64];
+};
 int client_count = 0;
+
+struct USERS server;
+
 pthread_mutex_t clientl_lock =  PTHREAD_MUTEX_INITIALIZER;
 
 int main(){
@@ -26,6 +35,7 @@ int main(){
   int lis = 0;
   int client = 0;
   int reuseaddr_opt = 1;
+
 
   struct addrinfo hints;
   struct addrinfo *res;
@@ -78,7 +88,7 @@ int main(){
     }
     
     pthread_mutex_lock(&clientl_lock);
-    client_list[client_count] = client;
+    server.client_id[client_count] = client;
     client_count++;
     pthread_mutex_unlock(&clientl_lock);
 
@@ -124,9 +134,9 @@ void *client_side(void *arg){
       printf("complete message: %s\n",msg);
       pthread_mutex_lock(&clientl_lock);
       for(int i = 0; i < client_count; i++){
-        if (client_list[i]!=clnt){
-          send(client_list[i],msg,strlen(msg), 0);
-          send(client_list[i],"\n",1,0);
+        if (server.client_id[i]!=clnt){
+          send(server.client_id[i],msg,strlen(msg), 0);
+          send(server.client_id[i],"\n",1,0);
         }
       }
       pthread_mutex_unlock(&clientl_lock);
@@ -147,8 +157,8 @@ void *client_side(void *arg){
 
   pthread_mutex_lock(&clientl_lock);
   for(int i = 0; i < client_count; i++){
-    if (client_list[i]==clnt){
-      client_list[i] = client_list[client_count-1];
+    if (server.client_id[i]==clnt){
+      server.client_id[i] = server.client_id[client_count-1];
       client_count--;
       break;
     }
